@@ -10,6 +10,9 @@
 #include <string.h>
 #include <strings.h> //bzero
 #include <errno.h>
+#include <unistd.h>
+#include <pthread.h>
+
 #define G_BLOCK_SIZE 1024
 
 using namespace std;
@@ -19,7 +22,7 @@ class udp_client{
 	public:
 		udp_client(std::string _remote_ip ="127.0.0.1",unsigned short _port = 8080);
 		int init_client();
-		int reliable_recv_msg(string _out_msg);
+		int reliable_recv_msg(string& _out_msg);
 		int reliable_send_msg(string& _in_msg);
 		~udp_client();
 	private:

@@ -7,6 +7,19 @@ static void print_log(std::string _log)
 	std::cerr<<_log<<std::endl;
 }
 
+bool udp_server::register_user(struct sockaddr_in& client)
+{
+	std::string _ip_key= inet_ntoa(client.sin_addr);
+	print_log(_ip_key);
+	std::map<std::string,struct sockaddr_in>::iterator _iter=online_user.find(_ip_key);
+	if(_iter != online_user.end())
+	{
+		return false;
+	}
+	online_user.insert(make_pair(_ip_key,client));
+	print_log("regis done..");
+	return true;
+}
 
 udp_server::udp_server(unsigned short int _port)
 	:port(_port)
@@ -16,7 +29,10 @@ udp_server::udp_server(unsigned short int _port)
 
 udp_server::~udp_server()
 {
+	if(sock>0)
+		close(sock);
 }
+
 
 
 //if success return 0
@@ -43,12 +59,17 @@ int udp_server::init_server()
 	return 0;
 }
 
-int udp_server::reliable_recv_msg(string& _out_msg)//输出型参数
+int udp_server::reliable_recv_msg()//输出型参数
 {
+	std::string _out_msg;
 	int ret = recv_msg(_out_msg);
 	if(ret > 0)
 	{
-		//pool.put_msg(_out_msg);
+//		print_log("reliable_recv");
+		print_log(_out_msg);
+		pool.put_msg(_out_msg);
+//		print_log("after put");
+
 		return ret;
 	}
 	return -1;
@@ -60,7 +81,7 @@ int udp_server::recv_msg(std::string& _out_msg)//输出型参数
 	bzero(buf,sizeof(buf));
 	struct sockaddr_in client;
 	socklen_t len=sizeof(client);
-	// recvfrom(int sockfd, void *buf, size_t len, int flags,struct sockaddr *src_addr, socklen_t *addrlen);
+	 //recvfrom(int sockfd, void *buf, size_t len, int flags,struct sockaddr *src_addr, socklen_t *addrlen);
 	ssize_t _size = recvfrom(sock,buf,sizeof(buf)-1,0,(struct sockaddr*)&client,&len);
 	if(_size < 0)
 	{
@@ -71,18 +92,20 @@ int udp_server::recv_msg(std::string& _out_msg)//输出型参数
 	else if(_size >= 0)
 	{
 		_out_msg=buf;
+		//keep->online_user
+		register_user(client);
 	}
-	return 0;
+	return _size;
 }
 
-int udp_server::reliable_send_msg(std::string& _in_msg,struct sockaddr_in* client,socklen_t len)//输出型参数
+int udp_server::reliable_send_msg(std::string& _in_msg,struct sockaddr_in& client,socklen_t len)//输出型参数
 {
 	return send_msg( _in_msg,client, len);//输出型参数
 }
-int udp_server::send_msg(std::string& _in_msg,struct sockaddr_in* client,socklen_t len)//输出型参数
+int udp_server::send_msg(std::string& _in_msg,struct sockaddr_in& client,socklen_t len)//输出型参数
 {
 	//sendto
-	ssize_t _size = sendto(sock,_in_msg.c_str(),_in_msg.size(),0,(sockaddr*)client,len);
+	ssize_t _size = sendto(sock,_in_msg.c_str(),_in_msg.size(),0,(sockaddr*)&client,len);
 	if(_size < 0)
 	{
 		print_log(strerror(errno));
@@ -90,20 +113,20 @@ int udp_server::send_msg(std::string& _in_msg,struct sockaddr_in* client,socklen
 	}
 	else
 	{
-
 	}
 	return 0;
 }
 
 int udp_server::broadcast_msg()
 {
-	//std::string msg = pool.get_msg();
+	std::string msg;
+	pool.get_msg(msg);
+
 	std::map<std::string,struct sockaddr_in>::iterator _iter = online_user.begin();
 	for(;_iter != online_user.end();++_iter)
 	{
-		//reliable_send_msg(msg,_iter->second,sizeof(_iter->second));
-
-
+		print_log(msg);
+		reliable_send_msg(msg,_iter->second,sizeof(_iter->second));
 	}
 	return 0;
 }

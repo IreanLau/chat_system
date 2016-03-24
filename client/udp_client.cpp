@@ -26,8 +26,9 @@ int udp_client::init_client()
 	return 0;
 }
 
-int udp_client::reliable_recv_msg(std::string _out_msg)
+int udp_client::reliable_recv_msg(std::string& _out_msg)
 {
+
 	char buf[G_BLOCK_SIZE];
 	bzero(buf,sizeof(buf));
 	struct sockaddr_in remote;
@@ -44,7 +45,7 @@ int udp_client::reliable_recv_msg(std::string _out_msg)
 	{
 		_out_msg=buf;
 	}
-	return 0;
+	return _size;
 }
 
 
@@ -63,7 +64,6 @@ int udp_client::reliable_send_msg(string& _in_msg)
 	}
 	else
 	{
-
 	}
 	return 0;
 }

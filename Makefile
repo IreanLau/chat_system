@@ -5,7 +5,7 @@ CLIENT_BIN=chat_client
 
 CLIENT=$(ROOT_PATH)/client
 COMM=$(ROOT_PATH)/comm
-CONF=$(ROOT_PATH)conf
+CONF=$(ROOT_PATH)/conf
 DATA_POOL=$(ROOT_PATH)/data_pool
 LIB=$(ROOT_PATH)/lib
 LOG=$(ROOT_PATH)/log
@@ -19,7 +19,7 @@ CC=g++
 INCLUDE= -I$(SERVER) -I$(CLIENT) -I$(COMM) -I$(DATA_POOL) -I$(LIB)/include 
 LIB_A_SO=-L $(LIB)/libs  
 FLAGS=  -g -Wall -D__DEBUG__ -D_STLE_
-LDFLAGS=-ljson_linux-gcc-4.4.7_libmt -lpthread  
+LDFLAGS=-ljson_linux-gcc-4.4.7_libmt -lpthread -lncurses
 SRC=$(shell ls -R | egrep '.cpp' | egrep -v 'libjson_linux-gcc-4.4.7_libmt.a')
 OBJ=$(SRC:.cpp=.o)
 
@@ -74,7 +74,13 @@ clean:
 
 .PHONY:output
 output:
-	mkdir output
-	cp $(SERVER_BIN) output
-	cp $(CLIENT_BIN) output
-	cp $(PLUGIN)/start.sh output
+	mkdir -p output/client
+	mkdir -p output/server
+	mkdir -p output/log
+	mkdir -p output/conf
+	cp $(SERVER_BIN) output/server
+	cp $(CLIENT_BIN) output/client
+	cp $(PLUGIN)/start.sh output/server
+	cp $(PLUGIN)/ctrl.sh output/server
+	cp $(LOG)/server.log output/log
+	cp $(CONF)/server.conf output/conf

@@ -51,17 +51,7 @@ int main()
 		_client_data.get_cmd(tmp);
 		cout<<tmp<<",";
 		_client_data.get_msg(tmp);
-		cout<<endl;
+		cout<<tmp<<endl;
 	}
-
-//	string inmsg;
-//	client.reliable_recv_msg(msg);
-//	sleep(1);
-//	client.reliable_recv_msg(msg);
-//	sleep(1);
-//	client.reliable_recv_msg(msg);
-//	sleep(1);
-
-
 	return 0;
 }

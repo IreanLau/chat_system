@@ -1,4 +1,5 @@
 #include"udp_server.h"
+#include"udp_data.h"
 
 
 
@@ -9,6 +10,7 @@ static void print_log(std::string _log)
 
 bool udp_server::register_user(struct sockaddr_in& client)
 {
+
 	std::string _ip_key= inet_ntoa(client.sin_addr);
 	print_log(_ip_key);
 	std::map<std::string,struct sockaddr_in>::iterator _iter=online_user.find(_ip_key);
@@ -16,6 +18,7 @@ bool udp_server::register_user(struct sockaddr_in& client)
 	{
 		return false;
 	}
+
 	online_user.insert(make_pair(_ip_key,client));
 	print_log("regis done..");
 	return true;
@@ -122,10 +125,26 @@ int udp_server::broadcast_msg()
 	std::string msg;
 	pool.get_msg(msg);
 
+
 	std::map<std::string,struct sockaddr_in>::iterator _iter = online_user.begin();
 	for(;_iter != online_user.end();++_iter)
 	{
+		print_log("broadcast");
 		print_log(msg);
+		
+		udp_data _data;
+		string _cmd;
+		_data.str_to_val(msg);
+		_data.get_cmd(_cmd);
+		if(_cmd=="CMD_QUIT")
+		{
+			string _ip_key= inet_ntoa(_iter->second.sin_addr);
+			print_log("client close...");
+			cout<<_ip_key<<"  :>will deadline..."<<endl;
+			online_user.erase(_ip_key);
+			return 0;
+		}
+
 		reliable_send_msg(msg,_iter->second,sizeof(_iter->second));
 	}
 	return 0;

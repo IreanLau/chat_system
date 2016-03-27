@@ -3,7 +3,7 @@
 
 udp_data::udp_data()
 {
-
+	this->cmd="MESSAGE";
 }
 
 udp_data::~udp_data()

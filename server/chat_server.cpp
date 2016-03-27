@@ -35,6 +35,9 @@ int main(int argc,char*argv[])
 		usage(argv[0]);
 		exit(1);
 	}
+
+	//daemon(0,0);
+
 	int port=atoi(argv[1]);
 	udp_server serd(port);
 	serd.init_server();
